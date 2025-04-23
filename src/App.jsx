@@ -2,6 +2,7 @@ import { DualNBackComponent } from './components/DualNBackGame/DualNBackComponen
 import './App.css'
 
 function App() {
+  //TODO: Add a focusing game with an image and canvas, then let ai process the similarities and give points.
   return (
     <div className="app">
       <DualNBackComponent/>

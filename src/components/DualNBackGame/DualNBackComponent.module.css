@@ -2,10 +2,21 @@
     width: 100%;
     max-width: 1200px;
     display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 2rem;
+    flex-direction: row;
+    justify-content: center;
+    gap: 1.5rem;
     padding: 2rem;
+    font-family: var(--font-display);
+}
+
+.gridContainer {
+    width: 40%;
+    min-width: 300px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
 }
 
 .grid {
@@ -14,37 +25,76 @@
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 8px;
-    padding: 16px;
-    background-color: #f0f0f0;
-    border-radius: 8px;
+    padding: 12px;
+    background-color: black;
+    border: 2px solid white;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .grid div {
     background-color: #fff;
-    border: 1px solid #ccc;
     display: flex;
     align-items: center;
     justify-content: center;
     aspect-ratio: 1;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background-color 0.2s ease;
-    font-size: 0.875rem;
+    transition: background-color 0.4s ease-in-out;
+    font-size: 1rem;
 }
 
 .grid div[data-lit="true"] {
     background-color: #4CAF50;
+    border: 2px solid #007BFF;
     color: white;
+}
+
+.panel{
+    width: 25%;
+    min-width: 300px;
+    height: 400px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+}
+
+.controls{
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+}
+
+.controlBtn{
+    padding: 1rem 2rem;
+    background-color: #007BFF;
+    color: white;
+    font-size: 1rem;
+    font-family: var(--font-display);
+    border: 2px solid #00264e;
+}
+
+.controlBtn:hover {
+    background-color: #0056b3;
+    cursor: pointer;
+}
+
+.controlBtn:disabled {
+    background-color: #182e45;
+    color: #989898;
+    cursor: not-allowed;
 }
 
 .scoreboard {
     width: 100%;
-    max-width: 400px;
+    max-width: 500px;
     padding: 1rem;
-    background-color: gray;
-    border-radius: 8px;
+    background-color: black;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.scoreboard * {
+    border-bottom: 2px solid #ccc;
+    padding-bottom: 0.5rem;
 }
 
 .scoreboard h2 {
@@ -58,11 +108,75 @@
     font-size: 1.125rem;
 }
 
-@media (min-width: 768px) {
+.levelSelect {
+    padding: 1rem;
+    background-color: #007BFF;
+    color: white;
+    font-size: 1rem;
+    font-family: var(--font-display);
+    border: 2px solid #00264e;
+    cursor: pointer;
+    outline: none;
+    appearance: none;
+    text-align: center;
+}
+
+.levelSelect:hover {
+    background-color: #0056b3;
+}
+
+.levelSelect option {
+    background-color: #242424;
+    padding: 0.5rem;
+    font-size: 1rem;
+    font-family: var(--font-display);
+}
+
+.resultsList {
+    list-style: none;
+    padding: 0.5rem;
+    margin-top: 1rem;
+    font-size: 0.75rem;
+    max-height: 200px;
+    overflow-y: auto;
+    background-color: #182e45;
+    border: 2px solid #00264e;
+}
+
+.resultsList li {
+    padding: 0.5rem;
+    margin-bottom: 0.5rem;
+    border-bottom: 1px solid #007BFF;
+    text-align: center;
+}
+
+.resultsList li:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+}
+
+/* Custom scrollbar for the results list */
+.resultsList::-webkit-scrollbar {
+    width: 8px;
+}
+
+.resultsList::-webkit-scrollbar-track {
+    background: #182e45;
+}
+
+.resultsList::-webkit-scrollbar-thumb {
+    background: #007BFF;
+    border: 2px solid #00264e;
+}
+
+@media (max-width: 768px) {
     .container {
-        flex-direction: row;
-        justify-content: center;
-        align-items: flex-start;
+        flex-direction: column-reverse;
+        align-items: center;
+    }
+
+    .panel {
+        height: auto;
     }
 
     .scoreboard {
