@@ -1,12 +1,47 @@
-# React + Vite
+# Dual N-Back Memory Game
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A React-based implementation of the Dual N-Back cognitive training game, designed to improve working memory and fluid intelligence.
 
-Currently, two official plugins are available:
+## About the Game
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+The Dual N-Back game is a challenging cognitive exercise where players must remember and match patterns that appeared N steps ago. In this version:
 
-## Expanding the ESLint configuration
+- Players monitor a 3x3 grid where blocks light up in sequence
+- Players must identify when the current block matches the position from N steps back
+- Difficulty levels range from 1-back to 5-back
+- Scores track correct matches, points earned, and errors made
+- Game ends after 24 rounds or 4 errors
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Features
+
+- Adjustable difficulty levels (1-5 back)
+- Real-time score tracking
+- Local storage for game results
+- Retro-styled UI with pixel art aesthetics
+- Responsive design for various screen sizes
+
+## Technical Stack
+
+- React 18+
+- Vite for build tooling
+- CSS Modules for styling
+- Local Storage API for result persistence
+
+## Getting Started
+
+1. Clone the repository
+2. Install dependencies:
+```bash
+npm install
+```
+3. Run the development server:
+```bash
+npm run dev
+```
+
+## Future Improvements
+
+- Add audio feedback for block interactions
+- Implement a round counter
+- Enhance scoring system
+- Add additional visual patterns or letters
