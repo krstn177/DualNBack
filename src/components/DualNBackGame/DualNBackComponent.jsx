@@ -16,9 +16,8 @@ export const DualNBackComponent = () => {
     
     //TODO: Add a sound to the blocks when they are lit up OR Letters.
     //TODO: Add a counter for the rounds.
-    //TODO: Subtract points for errors. Make the calculation of points more adequate.
-    
-
+    //TODO: Give signal when game has failed.
+    //TODO: Give signals on error and success.
     
     useEffect(() => {
         const storedResults = localStorage.getItem('results');
@@ -40,6 +39,7 @@ export const DualNBackComponent = () => {
         let pointsInRound = 0;
         let playerPoints = 0;
         let errors = 0;
+        let gameFailed = false;
 
         for (let index = 0; index < nBackLevel; index++) {
             if (!isRunning.current) return;
@@ -96,13 +96,16 @@ export const DualNBackComponent = () => {
             setActiveBlock(null);
             if (errors >= 4) {
                 console.log("Game Over! Too many errors.");
+                gameFailed = true;
                 break;
             }
             await delay(2000);
         }
         setIsPlaying(false);
         isRunning.current = false;
-        setResults(prev => [...prev, {pointsInRound, playerPoints, errors}]);
+        if (!gameFailed) {
+            setResults(prev => [...prev, {pointsInRound, playerPoints, errors}]);
+        }
     }, [gridBlocks.length, nBackLevel]);
 
     function startGame() {
