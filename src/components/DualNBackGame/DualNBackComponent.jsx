@@ -4,11 +4,14 @@ import styles from './DualNBackComponent.module.css'
 export const DualNBackComponent = () => {
     const [nBackLevel, setNBackLevel] = useState(2);
     const [gridBlocks] = useState(Array(9).fill(null));
+    const [numberOfRounds, setNumberOfRounds] = useState(0);
 
     const [results, setResults] = useState([]);
 
     const isRunning = useRef(false);
     const [isPlaying, setIsPlaying] = useState(false);
+    const [showRoundResult, setShowRoundResult] = useState(false);
+    const [roundResult, setRoundResult] = useState(false);
 
     const guessedABlockNow = useRef(false);
     const [activeBlock, setActiveBlock] = useState(null);
@@ -36,7 +39,6 @@ export const DualNBackComponent = () => {
     const gameLoop = useCallback(async () => {
         let previousBlocks = [];
         let currentActiveBlock = null;
-        let pointsInRound = 0;
         let playerPoints = 0;
         let errors = 0;
         let gameFailed = false;
@@ -54,10 +56,12 @@ export const DualNBackComponent = () => {
             currentActiveBlock = null;
             setActiveBlock(null);
             await delay(2000);
+            setNumberOfRounds(prev => prev + 1);
         }
         
         for (let index = nBackLevel; index < 24; index++) {
             if (!isRunning.current) return;
+            setRoundResult(false);
             const chanceToMatch = Math.random() < 0.2;
             const randomIndex = Math.floor(Math.random() * gridBlocks.length);
 
@@ -77,9 +81,9 @@ export const DualNBackComponent = () => {
             if (!isRunning.current) return;
             if (previousBlocks[index - nBackLevel] === currentActiveBlock) {
                 console.log("We got a match!");
-                pointsInRound++;
                 if (guessedABlockNow.current) {
                     playerPoints++;
+                    setRoundResult(true);
                 } else {
                     errors++;
                 }
@@ -87,28 +91,38 @@ export const DualNBackComponent = () => {
                 console.log("No match!");
                 if (guessedABlockNow.current) {
                     errors++;
+                } else {
+                    playerPoints++;
+                    setRoundResult(true);
                 }
             }
             setCanGuess(false);
+            setShowRoundResult(true);
             guessedABlockNow.current = false;
             previousBlocks.push(currentActiveBlock);
             currentActiveBlock = null;
             setActiveBlock(null);
             if (errors >= 4) {
-                console.log("Game Over! Too many errors.");
+                alert("Game Over! Too many errors.");
                 gameFailed = true;
                 break;
             }
-            await delay(2000);
+
+            await delay(1000);
+            setShowRoundResult(false);
+            
+            await delay(1000);
+            setNumberOfRounds(prev => prev + 1);
         }
         setIsPlaying(false);
         isRunning.current = false;
         if (!gameFailed) {
-            setResults(prev => [...prev, {pointsInRound, playerPoints, errors}]);
+            setResults(prev => [...prev, {playerPoints, errors, nBackLevel}]);
         }
     }, [gridBlocks.length, nBackLevel]);
 
     function startGame() {
+        setNumberOfRounds(0);
         setActiveBlock(null);
         setIsPlaying(true);
         isRunning.current = true;
@@ -128,6 +142,11 @@ export const DualNBackComponent = () => {
         }
     }
 
+    function clearResults() {
+        setResults([]);
+        localStorage.removeItem('results');
+    }
+
     return (
         <div className={styles.container}>
             <div className={styles.gridContainer}>
@@ -139,7 +158,7 @@ export const DualNBackComponent = () => {
                 </div>
                 <button 
                     disabled={!canGuess} 
-                    className={styles.controlBtn}
+                    className={`${styles.controlBtn} ${showRoundResult ? (roundResult ? styles.rightGuess : styles.wrongGuess) : ''}`}
                     onClick={handleGuessClick}
                 >
                    Same Block Appeared {nBackLevel} Steps Ago?
@@ -164,20 +183,22 @@ export const DualNBackComponent = () => {
 
                 <div className={styles.scoreboard}>
                     <h2>Scoreboard</h2>
+                    {isPlaying && <p className={styles.roundsCounter}>Rounds: {numberOfRounds}/24</p>}
                     <h3>Results:</h3>
                     <ul className={styles.resultsList}>
                     {results.length === 0 
                         ? 
                         <li>No results yet.</li> 
                         : 
-                        results.map((result, index) => (
+                        [...results].reverse().map((result, index) => (
                             <li key={index}>
-                                Game {index + 1}: {result.playerPoints}/{result.pointsInRound} OR {result.playerPoints/result.pointsInRound * 100}%, Errors: {result.errors}
+                                Game {index + 1}: {result.playerPoints}/{24-result.nBackLevel} OR {result.playerPoints/(24-result.nBackLevel) * 100}%, Errors: {result.errors}
                             </li>
                         ))
                     }
                     </ul>
                 </div>
+                {results.length > 0 && <button className={styles.controlBtn} onClick={clearResults}>Clear Results</button>}
             </div>
         </div>
     )
