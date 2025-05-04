@@ -11,16 +11,19 @@ export const DualNBackComponent = () => {
     const isRunning = useRef(false);
     const [isPlaying, setIsPlaying] = useState(false);
     const [showRoundResult, setShowRoundResult] = useState(false);
-    const [roundResult, setRoundResult] = useState(false);
+    const [roundResultBlock, setRoundResultBlock] = useState(false);
+    const [roundResultLetter, setRoundResultLetter] = useState(false);
 
     const guessedABlockNow = useRef(false);
+    const guessedALetterNow = useRef(false);
+
     const [activeBlock, setActiveBlock] = useState(null);
-    const [canGuess, setCanGuess] = useState(false);
+    const [activeLetter, setActiveLetter] = useState(null);
+
+    const [canGuessBlock, setCanGuessBlock] = useState(false);
+    const [canGuessLetter, setCanGuessLetter] = useState(false);
     
     //TODO: Add a sound to the blocks when they are lit up OR Letters.
-    //TODO: Add a counter for the rounds.
-    //TODO: Give signal when game has failed.
-    //TODO: Give signals on error and success.
     
     useEffect(() => {
         const storedResults = localStorage.getItem('results');
@@ -37,44 +40,81 @@ export const DualNBackComponent = () => {
     const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
     const gameLoop = useCallback(async () => {
+        const letters = ['C', 'H', 'K', 'L', 'Q', 'R', 'S', 'T'];
+
         let previousBlocks = [];
         let currentActiveBlock = null;
-        let playerPoints = 0;
+        let previousLetters = [];
+        let currentActiveLetter = null;
+
+        let playerPointsBlocks = 0;
+        let playerPointsLetters = 0;
         let errors = 0;
         let gameFailed = false;
 
         for (let index = 0; index < nBackLevel; index++) {
             if (!isRunning.current) return;
             const randomIndex = Math.floor(Math.random() * gridBlocks.length);
+            const randomLetter = letters[Math.floor(Math.random() * letters.length)];
+
             currentActiveBlock = randomIndex;
+            currentActiveLetter = randomLetter;
+
             console.log(`Lit block: ${currentActiveBlock}`);
+            console.log(`Lit letter: ${currentActiveLetter}`);
+
             setActiveBlock(currentActiveBlock);
+            setActiveLetter(currentActiveLetter);
+
             await delay(2000);
 
             if (!isRunning.current) return;
             previousBlocks.push(currentActiveBlock);
+            previousLetters.push(currentActiveLetter);
+
             currentActiveBlock = null;
+            currentActiveLetter = null;
+
             setActiveBlock(null);
+            setActiveLetter(null);
+
             await delay(2000);
             setNumberOfRounds(prev => prev + 1);
         }
         
         for (let index = nBackLevel; index < 24; index++) {
             if (!isRunning.current) return;
-            setRoundResult(false);
-            const chanceToMatch = Math.random() < 0.2;
-            const randomIndex = Math.floor(Math.random() * gridBlocks.length);
+            setRoundResultBlock(false);
+            setRoundResultLetter(false);
 
-            if (chanceToMatch) {
+            const chanceToMatchBlock = Math.random() < 0.2;
+            const chanceToMatchLetter = Math.random() < 0.2;
+            const randomIndexBlocks = Math.floor(Math.random() * gridBlocks.length);
+            const randomLetter = letters[Math.floor(Math.random() * letters.length)];
+
+
+            if (chanceToMatchBlock) {
                 currentActiveBlock = previousBlocks[index - nBackLevel];
             } else {
-                currentActiveBlock = randomIndex;
+                currentActiveBlock = randomIndexBlocks;
             }
             setActiveBlock(currentActiveBlock);
 
-            setCanGuess(true);
+            if (chanceToMatchLetter) {
+                currentActiveLetter = previousLetters[index - nBackLevel];
+            } else {
+                currentActiveLetter = randomLetter;
+            }
+            setActiveLetter(currentActiveLetter);
+
+            setCanGuessBlock(true);
+            setCanGuessLetter(true);
+
             console.log(`Lit block: ${currentActiveBlock}`);
             console.log(`Previous block: ${previousBlocks[index - nBackLevel]}`);
+
+            console.log(`Lit letter: ${currentActiveLetter}`);
+            console.log(`Previous letter: ${previousLetters[index - nBackLevel]}`);
 
             await delay(2000);
             
@@ -82,8 +122,8 @@ export const DualNBackComponent = () => {
             if (previousBlocks[index - nBackLevel] === currentActiveBlock) {
                 console.log("We got a match!");
                 if (guessedABlockNow.current) {
-                    playerPoints++;
-                    setRoundResult(true);
+                    playerPointsBlocks++;
+                    setRoundResultBlock(true);
                 } else {
                     errors++;
                 }
@@ -92,17 +132,46 @@ export const DualNBackComponent = () => {
                 if (guessedABlockNow.current) {
                     errors++;
                 } else {
-                    playerPoints++;
-                    setRoundResult(true);
+                    playerPointsBlocks++;
+                    setRoundResultBlock(true);
                 }
             }
-            setCanGuess(false);
+
+            if (previousLetters[index - nBackLevel] === currentActiveLetter) {
+                console.log("We got a match!");
+                if (guessedALetterNow.current) {
+                    playerPointsLetters++;
+                    setRoundResultLetter(true);
+                } else {
+                    errors++;
+                }
+            } else {
+                console.log("No match!");
+                if (guessedALetterNow.current) {
+                    errors++;
+                } else {
+                    playerPointsLetters++;
+                    setRoundResultLetter(true);
+                }
+            }
+
+            setCanGuessBlock(false);
+            setCanGuessLetter(false);
+
             setShowRoundResult(true);
+
             guessedABlockNow.current = false;
+            guessedALetterNow.current = false;
+
             previousBlocks.push(currentActiveBlock);
+            previousLetters.push(currentActiveLetter);
+
             currentActiveBlock = null;
+            currentActiveLetter = null;
+
+            setActiveLetter(null);
             setActiveBlock(null);
-            if (errors >= 4) {
+            if (errors >= 8) {
                 alert("Game Over! Too many errors.");
                 gameFailed = true;
                 break;
@@ -117,13 +186,14 @@ export const DualNBackComponent = () => {
         setIsPlaying(false);
         isRunning.current = false;
         if (!gameFailed) {
-            setResults(prev => [...prev, {playerPoints, errors, nBackLevel}]);
+            setResults(prev => [...prev, {playerPointsBlocks, playerPointsLetters, errors, nBackLevel}]);
         }
     }, [gridBlocks.length, nBackLevel]);
 
     function startGame() {
         setNumberOfRounds(0);
         setActiveBlock(null);
+        setActiveLetter(null);
         setIsPlaying(true);
         isRunning.current = true;
         gameLoop();
@@ -132,13 +202,21 @@ export const DualNBackComponent = () => {
     function stopGame() {
         isRunning.current = false;
         setActiveBlock(null);
+        setActiveLetter(null);
         setIsPlaying(false);
     }
 
-    function handleGuessClick(){
+    function handleGuessClickBlock(){
         if (isRunning.current && activeBlock !== null) {
             guessedABlockNow.current = true;
-            setCanGuess(false);
+            setCanGuessBlock(false);
+        }
+    }
+
+    function handleGuessClickLetter(){
+        if (isRunning.current && activeLetter !== null) {
+            guessedALetterNow.current = true;
+            setCanGuessLetter(false);
         }
     }
 
@@ -153,16 +231,26 @@ export const DualNBackComponent = () => {
                 <div className={styles.grid}>
                     {gridBlocks.map((_, index) => (
                         <div key={index} data-lit={index === activeBlock}>
+                            {index === activeBlock && activeLetter}
                         </div>
                     ))}
                 </div>
-                <button 
-                    disabled={!canGuess} 
-                    className={`${styles.controlBtn} ${showRoundResult ? (roundResult ? styles.rightGuess : styles.wrongGuess) : ''}`}
-                    onClick={handleGuessClick}
-                >
-                   Same Block Appeared {nBackLevel} Steps Ago?
-                </button>
+                <div className={styles.guessBtnContainer}>
+                    <button 
+                        disabled={!canGuessBlock} 
+                        className={`${styles.controlBtn} ${showRoundResult ? (roundResultBlock ? styles.rightGuess : styles.wrongGuess) : ''}`}
+                        onClick={handleGuessClickBlock}
+                    >
+                    Position
+                    </button>
+                    <button 
+                        disabled={!canGuessLetter} 
+                        className={`${styles.controlBtn} ${showRoundResult ? (roundResultLetter ? styles.rightGuess : styles.wrongGuess) : ''}`}
+                        onClick={handleGuessClickLetter}
+                    >
+                    Letter
+                    </button>
+                </div>
             </div>
             <div className={styles.panel}>
                 <div className={styles.controls}>
@@ -191,8 +279,8 @@ export const DualNBackComponent = () => {
                         <li>No results yet.</li> 
                         : 
                         [...results].reverse().map((result, index) => (
-                            <li key={index}>
-                                Game {index + 1}: {result.playerPoints}/{24-result.nBackLevel} OR {result.playerPoints/(24-result.nBackLevel) * 100}%, Errors: {result.errors}
+                            <li key={results.length - index - 1}>
+                                Game {results.length - index}: Positions: {result.playerPointsBlocks}/{24-result.nBackLevel} OR {(result.playerPointsBlocks/(24-result.nBackLevel) * 100).toFixed(2)}%, Letters: {result.playerPointsLetters}/{24-result.nBackLevel} OR {(result.playerPointsLetters/(24-result.nBackLevel) * 100).toFixed(2)}%, Errors: {result.errors}
                             </li>
                         ))
                     }
